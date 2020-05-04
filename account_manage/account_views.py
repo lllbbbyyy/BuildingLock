@@ -38,7 +38,7 @@ def login():
     req_params = {
         'appid': appID,
         'secret': appSecret,
-        'js_code': code['code'],
+        'js_code': code,
         'grant_type': 'authorization_code'
     }
     wx_login_api = 'https://api.weixin.qq.com/sns/jscode2session'
