@@ -20,7 +20,7 @@ from selenium import webdriver
 #
 sys.path.append("..")
 from db_manage.sql import db
-from config.config import appID,appSecret,Config
+from config.config import appID, appSecret, Config
 from account_manage.account_models import User
 
 #跨文件路由需要蓝图
@@ -31,13 +31,14 @@ account_app = Blueprint('user', __name__)
 
 @account_app.route('/login', methods=['POST'])
 def login():
-    data = json.loads(request.get_data().decode('utf-8'))  #将前端Json数据转为字典
-
-    code = data['code']  #前端POST过来的微信临时登录凭证code
+    code = request.values.get('code')
+    print(code)
+    code = json.loads(code)
+    print(code)
     req_params = {
         'appid': appID,
         'secret': appSecret,
-        'js_code': code,
+        'js_code': code['code'],
         'grant_type': 'authorization_code'
     }
     wx_login_api = 'https://api.weixin.qq.com/sns/jscode2session'
@@ -53,31 +54,32 @@ def login():
     	在数据库用户表查询（查找得到的OpenID在数据库中是否存在）
     	SQLalchemy语句：
         '''
-        user_info = User.query.filter(User.OpenID == openid).first() 
-        if user_info is None: #不存在
+        user_info = User.query.filter(User.OpenID == openid).first()
+        if user_info is None:  #不存在
             '''
 	        将得到的OpenID添加到数据库得用户表
 	        SQLalchemy语句：
             '''
-            user_info = User(openid = openid,session_key=session_key,uuid=uuid.uuid1())
+            user_info = User(openid=openid,
+                             session_key=session_key,
+                             uuid=uuid.uuid1())
             db.session.add(user_info)
             db.session.commit()
-	        
-        token_dict={
+
+        token_dict = {
             #时间戳
-            'iat' : time.time(),
+            'iat': time.time(),
             #标识符
-            'uuid' : user_info.uuid
+            'uuid': user_info.uuid
         }
-        headers={
+        headers = {
             #使用的算法
-            'alg':'HS256'
+            'alg': 'HS256'
         }
-        jwt_token=jwt.encode(
-            token_dict,#有效载体
-            Config.SECRET_KEY,#加密密钥
-            algorithm='HS256',#加密算法
-            headers=headers
-        ).decode('UTF-8')
+        jwt_token = jwt.encode(
+            token_dict,  #有效载体
+            Config.SECRET_KEY,  #加密密钥
+            algorithm='HS256',  #加密算法
+            headers=headers).decode('UTF-8')
         return jwt_token  #将内容返回
     return "code失效或不正确"
