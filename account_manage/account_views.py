@@ -45,7 +45,9 @@ def login():
     response_data = requests.get(wx_login_api, params=req_params)  #向API发起GET请求
     data = response_data.json()
     openid = data['openid']  #得到用户关于当前小程序的OpenID
+    print(openid)
     session_key = data['session_key']  #得到用户关于当前小程序的会话密钥session_key
+    print(session_key)
     '''
 	下面部分是通过判断数据库中用户是否存在来确定添加或返回自定义登录态（若用户不存在则添加；若用户存在，我这里返回的是添加用户时生成的自增长字段UserID）
 	'''
@@ -54,7 +56,7 @@ def login():
     	在数据库用户表查询（查找得到的OpenID在数据库中是否存在）
     	SQLalchemy语句：
         '''
-        user_info = User.query.filter(User.OpenID == openid).first()
+        user_info = User.query.filter(User.openid == openid).first()
         if user_info is None:  #不存在
             '''
 	        将得到的OpenID添加到数据库得用户表
