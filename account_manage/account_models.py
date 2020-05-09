@@ -24,5 +24,8 @@ class User(db.Model):
     openid = db.Column(db.String(120), unique=True)
     session_key = db.Column(db.String(120))
     uuid = db.Column(db.String(120),unique=True)
+    username = db.Column(db.String(120))
+    phonenum = db.Column(db.String(120))
+    logic = db.Column(db.String(120))
 
 

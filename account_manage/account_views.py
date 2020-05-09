@@ -60,24 +60,67 @@ def login():
             '''
             user_info = User(openid=openid,
                              session_key=session_key,
-                             uuid=str(uuid.uuid1()))
+                             uuid=str(uuid.uuid1()),
+                             username="",
+                             phonenum="",
+                             logic="12345")
             db.session.add(user_info)
             db.session.commit()
 
-        token_dict = {
-            #时间戳
-            'iat': time.time(),
-            #标识符
-            'uuid': user_info.uuid
-        }
-        headers = {
-            #使用的算法
-            'alg': 'HS256'
-        }
-        jwt_token = jwt.encode(
-            token_dict,  #有效载体
-            Config.SECRET_KEY,  #加密密钥
-            algorithm='HS256',  #加密算法
-            headers=headers).decode('UTF-8')
-        return jwt_token  #将内容返回
+        # token_dict = {
+        #     #时间戳
+        #     'iat': time.time(),
+        #     #标识符
+        #     'uuid': user_info.uuid
+        # }
+        # headers = {
+        #     #使用的算法
+        #     'alg': 'HS256'
+        # }
+        # jwt_token = jwt.encode(
+        #     token_dict,  #有效载体
+        #     Config.SECRET_KEY,  #加密密钥
+        #     algorithm='HS256',  #加密算法
+        #     headers=headers).decode('UTF-8')
+        return_info={"userID":user_info.uuid}
+        return json.dumps(return_info)  #将内容返回
     return "code失效或不正确"
+
+@account_app.route('/register', methods=['POST'])
+def register():
+    userid = request.values.get('userID')
+    
+    username = request.values.get('username')
+    
+    phonenum = request.values.get('phonenum')
+    if !(userid and username and phonenum):
+        return json.dumps({"state":"0"})
+    userid = json.loads(userid)
+    username = json.loads(username)
+    phonenum = json.loads(phonenum)
+    user = User.query.filter(User.uuid == userid).first()
+    if user is None:
+        return json.dumps({"state":"0"})
+    user.username=username
+    user.phonenum=phonenum
+    db.session.commit()
+    return json.dumps({"state":"1"})
+    
+@account_app.route('/auto_login', methods=['POST'])
+def register():
+    return_info={"state":"0","username":"","phonenum":"","user_logic":""}
+    userid = request.values.get('userID')
+
+    if !userid:
+        return json.dumps(return_info)
+    userid = json.loads(userid)
+
+    user = User.query.filter(User.uuid == userid).first()
+    if user is None:
+        return json.dumps(return_info)
+    
+    return_info["username"]=user.username
+    return_info["phonenum"]=user.phonenum
+    return_info["user_logic"]=user.logic
+    return_info["state"]="1"
+    return json.dumps(return_info)
