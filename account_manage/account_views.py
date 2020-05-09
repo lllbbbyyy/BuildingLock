@@ -93,7 +93,7 @@ def register():
     username = request.values.get('username')
     
     phonenum = request.values.get('phonenum')
-    if !(userid and username and phonenum):
+    if userid is None or username is None or phonenum is None:
         return json.dumps({"state":"0"})
     userid = json.loads(userid)
     username = json.loads(username)
@@ -107,11 +107,11 @@ def register():
     return json.dumps({"state":"1"})
     
 @account_app.route('/auto_login', methods=['POST'])
-def register():
+def auto_login():
     return_info={"state":"0","username":"","phonenum":"","user_logic":""}
     userid = request.values.get('userID')
 
-    if !userid:
+    if userid is None:
         return json.dumps(return_info)
     userid = json.loads(userid)
 
