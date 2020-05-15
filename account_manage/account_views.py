@@ -27,9 +27,6 @@ from account_manage.account_models import User
 account_app = Blueprint('user', __name__)
 
 ##辅助函数
-
-
-@account_app.route('/login', methods=['POST'])
 def login():
     code = request.values.get('code')
     code = json.loads(code)
@@ -86,7 +83,6 @@ def login():
         return json.dumps(return_info)  #将内容返回
     return "code失效或不正确"
 
-@account_app.route('/register', methods=['POST'])
 def register():
     userid = request.values.get('userID')
     
@@ -105,8 +101,7 @@ def register():
     user.phonenum=phonenum
     db.session.commit()
     return json.dumps({"state":"1"})
-    
-@account_app.route('/auto_login', methods=['POST'])
+
 def auto_login():
     return_info={"state":"0","username":"","phonenum":"","user_logic":""}
     userid = request.values.get('userID')
@@ -124,3 +119,41 @@ def auto_login():
     return_info["user_logic"]=user.logic
     return_info["state"]="1"
     return json.dumps(return_info)
+
+def change_phonenum():
+    return_info={"state":"0"}
+    userid = request.values.get('userID')
+    if userid is None:
+        return json.dumps(return_info)
+    userid = json.loads(userid)
+
+    user = User.query.filter(User.uuid == userid).first()
+    if user is None:
+        return json.dumps(return_info)
+    phonenum = request.values.get('phonenum')
+    if phonenum is None:
+        return json.dumps(return_info)
+    phonenum = json.loads(phonenum)
+    if phonenum is None:
+        return json.dumps(return_info)
+    user.phonenum=phonenum
+    
+    db.session.commit()
+    return_info["state"]="1"
+    return json.dumps(return_info)
+    
+
+@account_app.route('/', methods=['POST'])
+def deal():
+    port=request.values.get('code')
+    port=json.loads(port)
+    if port=="login":
+        return login()
+    elif port=="register":
+        return register()
+    elif port=="auto_login":
+        return auto_login()
+    elif port=="change_phonenum":
+        return change_phonenum()
+    
+    return json.dumps("deal error")
