@@ -145,7 +145,7 @@ def change_phonenum():
 
 @account_app.route('/', methods=['POST'])
 def deal():
-    port=request.values.get('code')
+    port=request.values.get('port')
     port=json.loads(port)
     if port=="login":
         return login()
