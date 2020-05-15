@@ -36,4 +36,4 @@ def create_db():
 app.register_blueprint(account_app)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=5050,debug=True)
+    app.run(host='0.0.0.0',port=5050,debug=True,ssl_context=('config/fdxtxyz/Nginx/1_fdxt.xyz_bundle.crt','config/fdxtxyz/Nginx/2_fdxt.xyz.key'))
