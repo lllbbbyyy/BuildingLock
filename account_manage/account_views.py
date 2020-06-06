@@ -21,7 +21,7 @@ from selenium import webdriver
 sys.path.append("..")
 from db_manage.sql import db
 from config.config import appID, appSecret, Config
-from account_manage.account_models import User
+from account_manage.account_models import User,Lock
 
 #跨文件路由需要蓝图
 account_app = Blueprint('user', __name__)
@@ -59,8 +59,7 @@ def login():
                              session_key=session_key,
                              uuid=str(uuid.uuid1()),
                              username="",
-                             phonenum="",
-                             logic="12345")
+                             phonenum="")
             db.session.add(user_info)
             db.session.commit()
 
@@ -103,7 +102,7 @@ def register():
     return json.dumps({"state":"1"})
 
 def auto_login():
-    return_info={"state":"0","username":"","phonenum":"","user_logic":""}
+    return_info={"state":"0","username":"","phonenum":""}
     userid = request.values.get('userID')
 
     if userid is None:
@@ -116,7 +115,10 @@ def auto_login():
     
     return_info["username"]=user.username
     return_info["phonenum"]=user.phonenum
-    return_info["user_logic"]=user.logic
+    
+
+    lock_list=Lock.query.filter(Lock.lockmasteruuid==user.uuid).all()
+    return_info["lock_list"]=lock_list
     return_info["state"]="1"
     return json.dumps(return_info)
 
@@ -141,7 +143,37 @@ def change_phonenum():
     db.session.commit()
     return_info["state"]="1"
     return json.dumps(return_info)
+
+def add_lock():
+    return_info={"state":"0"}
+
+    userid = request.values.get('userID')
+    if userid is None:
+        return json.dumps(return_info)
+    userid = json.loads(userid)
+
+    user = User.query.filter(User.uuid == userid).first()
+    if user is None:
+        return json.dumps(return_info)
+
+    lockname = json.loads('lockName')
+    if lockname is None:
+        return json.dumps(return_info)
     
+    lock_info=Lock(
+        lockname=lockname,
+        lockmasteruuid=user.uuid,
+        qrcode="0",
+        monitor="0",
+        password="0",
+        nfc="0",
+        alart="0",
+        logic="none"
+    )
+    db.session.add(lock_info)
+    db.session.commit()
+    return_info["state"]="1"
+    return json.dumps(return_info)
 
 @account_app.route('/', methods=['POST'])
 def deal():
@@ -155,5 +187,7 @@ def deal():
         return auto_login()
     elif port=="change_phonenum":
         return change_phonenum()
+    elif port=="add_lock":
+        return add_lock()
     
     return json.dumps("deal error")
