@@ -31,6 +31,8 @@ class User(db.Model):
 class Lock(db.Model):
     #主键为id
     id = db.Column(db.Integer, primary_key=True)
+    #锁体的标识符id
+    lockid=db.Column(db.String(120), unique=True)
     #锁体名称
     lockname = db.Column(db.String(120))
     #锁体的用户uuid

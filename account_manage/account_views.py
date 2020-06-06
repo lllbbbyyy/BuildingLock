@@ -101,8 +101,24 @@ def register():
     db.session.commit()
     return json.dumps({"state":"1"})
 
+#辅助函数
+def get_lock_dict(all_lock_list):
+    lock_list=[]
+    for it in all_lock_list:
+        lock={}
+        lock["lockID"]=it.lockid
+        lock["lockName"]=it.lockname
+        lock["QRcode"]=it.qrcode
+        lock["monitor"]=it.monitor
+        lock["password"]=it.password
+        lock["nfc"]=it.nfc
+        lock["alart"]=it.alart
+        lock["user_logic"]=it.logic
+        lock_list.append(lock)
+    return lock_list
+
 def auto_login():
-    return_info={"state":"0","username":"","phonenum":""}
+    return_info={"state":"0","username":"","phonenum":"","lock_list":{}}
     userid = request.values.get('userID')
 
     if userid is None:
@@ -118,7 +134,7 @@ def auto_login():
     
 
     lock_list=Lock.query.filter(Lock.lockmasteruuid==user.uuid).all()
-    return_info["lock_list"]=lock_list
+    return_info["lock_list"]=get_lock_dict(lock_list)
     return_info["state"]="1"
     return json.dumps(return_info)
 
@@ -156,13 +172,15 @@ def add_lock():
     if user is None:
         return json.dumps(return_info)
 
-    lockname = json.loads('lockName')
+    lockname = request.values.get('lockName')
     if lockname is None:
         return json.dumps(return_info)
+    lockname = json.loads(lockname)
     
     lock_info=Lock(
         lockname=lockname,
         lockmasteruuid=user.uuid,
+        lockid=str(uuid.uuid1()),
         qrcode="0",
         monitor="0",
         password="0",
@@ -171,6 +189,64 @@ def add_lock():
         logic="none"
     )
     db.session.add(lock_info)
+    db.session.commit()
+    return_info["state"]="1"
+    return json.dumps(return_info)
+
+def delete_lock():
+    return_info={"state":"0"}
+
+    lockid = request.values.get('lockID')
+    if lockid is None:
+        return json.dumps(return_info)
+    lockid = json.loads(lockid)
+   
+    db.session.delete(Lock.query.filter(Lock.lockid == lockid).first())
+    db.session.commit()
+    return_info["state"]="1"
+    return json.dumps(return_info)
+
+def module():
+    return_info={"state":"0"}
+    #根据锁的id获取锁
+    lockid = request.values.get('lockID')
+    if lockid is None:
+        return json.dumps(return_info)
+    lockid = json.loads(lockid)
+
+    lock=Lock.query.filter(Lock.lockid == lockid).first()
+    #获得锁的各数据
+    qrcode = request.values.get('QRcode')
+    if qrcode is None:
+        return json.dumps(return_info)
+    qrcode = json.loads(qrcode)
+
+    monitor = request.values.get('monitor')
+    if monitor is None:
+        return json.dumps(return_info)
+    monitor = json.loads(monitor)
+
+    password = request.values.get('password')
+    if password is None:
+        return json.dumps(return_info)
+    password = json.loads(password)
+
+    nfc = request.values.get('nfc')
+    if nfc is None:
+        return json.dumps(return_info)
+    nfc = json.loads(nfc)
+
+    alart = request.values.get('alart')
+    if alart is None:
+        return json.dumps(return_info)
+    alart = json.loads(alart)
+    #修改锁的各数据
+    lock.qrcode=qrcode
+    lock.monitor=monitor
+    lock.password=password
+    lock.nfc=nfc
+    lock.alart=alart
+    #
     db.session.commit()
     return_info["state"]="1"
     return json.dumps(return_info)
@@ -189,5 +265,9 @@ def deal():
         return change_phonenum()
     elif port=="add_lock":
         return add_lock()
+    elif port=="delete_lock":
+        return delete_lock()
+    elif port=="module":
+        return module()
     
     return json.dumps("deal error")
