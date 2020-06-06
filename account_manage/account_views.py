@@ -108,11 +108,11 @@ def get_lock_dict(all_lock_list):
         lock={}
         lock["lockID"]=it.lockid
         lock["lockName"]=it.lockname
-        lock["QRcode"]=it.qrcode
-        lock["monitor"]=it.monitor
-        lock["password"]=it.password
-        lock["nfc"]=it.nfc
-        lock["alart"]=it.alart
+        lock["QRcode"]=int(it.qrcode)
+        lock["monitor"]=int(it.monitor)
+        lock["password"]=int(it.password)
+        lock["nfc"]=int(it.nfc)
+        lock["alart"]=int(it.alart)
         lock["user_logic"]=it.logic
         lock_list.append(lock)
     return lock_list
