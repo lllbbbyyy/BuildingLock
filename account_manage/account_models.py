@@ -38,9 +38,9 @@ class Lock(db.Model):
     #锁体的用户uuid
     lockmasteruuid = db.Column(db.String(120))
     #功能模块是否存在
-    qrcode = db.Column(db.String(120))
-    monitor = db.Column(db.String(120))
-    password = db.Column(db.String(120))
-    nfc = db.Column(db.String(120))
-    alart = db.Column(db.String(120))
-    logic = db.Column(db.String(300))
+    qrcode = db.Column(db.Integer)
+    monitor = db.Column(db.Integer)
+    password = db.Column(db.Integer)
+    nfc = db.Column(db.Integer)
+    alart = db.Column(db.Integer)
+    logic = db.Column(db.Integer)
